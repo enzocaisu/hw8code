@@ -1,0 +1,4 @@
+# Project exclude paths
+/hw8code/.gradle/
+/hw8code/typelang/build/
+/hw8code/typelang/build/classes/java/main/
