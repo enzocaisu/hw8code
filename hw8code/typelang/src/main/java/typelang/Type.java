@@ -3,13 +3,13 @@ package typelang;
 import java.util.List;
 
 public interface Type {
-	public String tostring();
+	public String toString();
 	public boolean typeEqual(Type other);
 
 	static class ErrorT implements Type {
 		String _message;
 		public ErrorT(String message) { _message = message; }
-	    public String tostring() {
+	    public String toString() {
 	    	return "Type error: " + _message;
 	    }
 		public boolean typeEqual(Type other) { return other == this; }
@@ -18,28 +18,28 @@ public interface Type {
 	static class UnitT implements Type {
 		private static final UnitT _instance = new UnitT();
 		public static UnitT getInstance() { return _instance; }
-	    public String tostring() { return "unit"; }
+	    public String toString() { return "unit"; }
 	    public boolean typeEqual(Type other) { return other.getClass() == this.getClass(); }
 	}
 
 	static class BoolT implements Type {
 		private static final BoolT _instance = new BoolT();
 		public static BoolT getInstance() { return _instance; }
-	    public String tostring() { return "bool"; }
+	    public String toString() { return "bool"; }
 	    public boolean typeEqual(Type other) { return other.getClass() == this.getClass(); }
 	}
 
 	static class StringT implements Type {
 		private static final StringT _instance = new StringT();
 		public static StringT getInstance() { return _instance; }
-	    public String tostring() { return "string"; }
+	    public String toString() { return "string"; }
 	    public boolean typeEqual(Type other) { return other.getClass() == this.getClass(); }
 	}
 
 	static class NumT implements Type {
 		private static final NumT _instance = new NumT();
 		public static NumT getInstance() { return _instance; }
-	    public String tostring() { return "number"; }
+	    public String toString() { return "number"; }
 	    public boolean typeEqual(Type other) { return other.getClass() == this.getClass(); }
 	}
 
@@ -49,8 +49,8 @@ public interface Type {
 	    public PairT(Type fst, Type snd) { _fst = fst; _snd = snd; } 
 		public Type fst() { return _fst; }
 		public Type snd() { return _snd; }
-	    public java.lang.String tostring() {
-	    	return "(" + _fst.tostring() + " " + _snd.tostring() + ")";
+	    public java.lang.String toString() {
+	    	return "(" + _fst.toString() + " " + _snd.toString() + ")";
 	    }
 	    public boolean typeEqual(Type other) {
 	    	if (other instanceof PairT) {
@@ -68,8 +68,8 @@ public interface Type {
 
 	    	_snd = this;
 	    }
-	    public java.lang.String tostring() {
-	    	return "List<" + _fst.tostring() + ">";
+	    public java.lang.String toString() {
+	    	return "List<" + _fst.toString() + ">";
 	    }
 	    public boolean typeEqual(Type other) {
 	    	if (other instanceof ListT) {
@@ -90,18 +90,18 @@ public interface Type {
 	    }
 		public List<Type> argTypes() { return _argTypes; }
 		public Type returnType() { return _returnType; }
-	    public java.lang.String tostring() {
+	    public java.lang.String toString() {
 	    	StringBuffer sb = new StringBuffer();
 	    	int size = _argTypes.size();
 	    	int i = 0;
 	    	for (Type type : _argTypes) {
-	    		sb.append(type.tostring());
+	    		sb.append(type.toString());
 	    		if (i != size - 1) { sb.append(", "); }
 
 	    		i++;
 	    	}
 	    	sb.append(" -> ");
-	    	sb.append(_returnType.tostring());
+	    	sb.append(_returnType.toString());
 	    	return sb.toString(); 
 	    }
 		public boolean typeEqual(Type other) {
@@ -128,8 +128,8 @@ public interface Type {
 		protected Type _nestType;
 	    public RefT(Type nestType) { _nestType = nestType; }
 		public Type nestType() { return _nestType; }
-	    public java.lang.String tostring() {
-	    	return "Ref " + _nestType.tostring();
+	    public java.lang.String toString() {
+	    	return "Ref " + _nestType.toString();
 	    }
 		public boolean typeEqual(Type other) {
 			if (other instanceof RefT) {

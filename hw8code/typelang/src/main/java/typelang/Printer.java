@@ -2,7 +2,6 @@ package typelang;
 
 import java.util.List;
 
-import typelang.Type;
 import typelang.AST.Exp;
 
 public class Printer {
@@ -11,8 +10,8 @@ public class Printer {
 			System.out.println(v.tostring());
 	}
 	public void print(Type t) {
-		if(t.tostring() != "")
-			System.out.println(t.tostring());
+		if(t.toString() != "")
+			System.out.println(t.toString());
 	}
 	public void print(Exception e) {
 		System.out.println(e.toString());

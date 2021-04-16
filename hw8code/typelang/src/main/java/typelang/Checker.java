@@ -7,11 +7,12 @@ import typelang.AST.*;
 import typelang.Env.ExtendEnv;
 import typelang.Env.GlobalEnv;
 import typelang.Type.*;
+import typelang.parser.TypeLangParser;
 
 public class Checker implements Visitor<Type,Env<Type>> {
 	Printer.Formatter ts = new Printer.Formatter();
 	Env<Type> initEnv = initialEnv(); //New for definelang
-	
+
 	private Env<Type> initialEnv() {
 		GlobalEnv<Type> initEnv = new GlobalEnv<Type>();
 		
@@ -77,7 +78,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 			if (!type.typeEqual(argType)) {
 				return new ErrorT("The declared type of the " + i +
 						" let variable and the actual type mismatch, expect " +
-						argType.tostring() + " found " + type.tostring() +
+						argType.toString() + " found " + type +
 						" in " + ts.visit(e, null));
 			}
 
@@ -145,8 +146,8 @@ public class Checker implements Visitor<Type,Env<Type>> {
 
 			if (!assignable(types.get(index), type)) {
 				return new ErrorT("The expected type of the " + index +
-						" variable is " + types.get(index).tostring() +
-						" found " + type.tostring() + " in " +
+						" variable is " + types.get(index).toString() +
+						" found " + type.toString() + " in " +
 						ts.visit(e, null));
 			}
 		}
@@ -160,8 +161,15 @@ public class Checker implements Visitor<Type,Env<Type>> {
 	}
 
 	public Type visit(CarExp e, Env<Type> env) {
-		// answer question 2(a)
-		return new ErrorT("Not coded yet.");
+		Exp exp = e.arg();
+		Type type = (Type)exp.accept(this, env);
+
+		if (type instanceof ErrorT) return type;
+
+		if (type instanceof PairT) return ((PairT) type).fst();
+
+		return new ErrorT("The car expected an expression of type Pair, found "
+		+ type.toString() + " in " + ts.visit(e, null));
 	}
 
 	public Type visit(CdrExp e, Env<Type> env) {
@@ -175,7 +183,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		}
 
 		return new ErrorT("The cdr expect an expression of type Pair, found "
-				+ type.tostring() + " in " + ts.visit(e, null));
+				+ type.toString() + " in " + ts.visit(e, null));
 	}
 
 	public Type visit(ConsExp e, Env<Type> env) {
@@ -192,8 +200,17 @@ public class Checker implements Visitor<Type,Env<Type>> {
 	}
 
 	public Type visit(ListExp e, Env<Type> env) {
-		// answer question 2(b)
-		return new ErrorT("Not coded yet.");
+		Type type = e.type();
+		List<Exp> elements = e.elems();
+		int i = 0;
+		for(Exp exp : elements){
+			Type exptype = (Type)exp.accept(this, env);
+			if (exptype instanceof ErrorT) return exptype;
+			if (!exptype.typeEqual(type)) return new ErrorT("The " + i + " expression should have type "
+			+ type + ", found " + exptype + " in " + ts.visit(e, null));
+			i++;
+		}
+		return new ListT(type);
 	}
 
 	public Type visit(NullExp e, Env<Type> env) {
@@ -204,7 +221,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		if (type instanceof ListT) { return BoolT.getInstance(); }
 
 		return new ErrorT("The null? expect an expression of type List, found "
-				+ type.tostring() + " in " + ts.visit(e, null));
+				+ type.toString() + " in " + ts.visit(e, null));
 	}
 
 
@@ -218,8 +235,8 @@ public class Checker implements Visitor<Type,Env<Type>> {
 			return new RefT(type);
 		}
 
-		return new ErrorT("The Ref expression expect type " + type.tostring() +
-				" found " + expType.tostring() + " in " + ts.visit(e, null));
+		return new ErrorT("The Ref expression expect type " + type.toString() +
+				" found " + expType.toString() + " in " + ts.visit(e, null));
 	}
 
 	//Question 1a
@@ -232,7 +249,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		if (type instanceof RefT) { return ((RefT) type).nestType(); }
 
 		return new ErrorT("The dereference expression expected a reference type, found " +
-				 type.tostring() + " in " + ts.visit(e, null));
+				 type.toString() + " in " + ts.visit(e, null));
 	}
 
 	//Question 1b
@@ -248,11 +265,11 @@ public class Checker implements Visitor<Type,Env<Type>> {
 			if (rtype instanceof ErrorT) return rtype;
 			if (rtype.typeEqual(ltype)) return rtype;
 			return new ErrorT("The inner type of the reference type is "
-			+ ((RefT) ltype).nestType().tostring() + ", the rhs type is " + rtype.tostring() + " in " + ts.visit(e, null) );
+			+ ((RefT) ltype).nestType().toString() + ", the rhs type is " + rtype.toString() + " in " + ts.visit(e, null) );
 		}
 
 		return new ErrorT("The lhs of the assignment expression expects a reference type, found "
-				+ ltype.tostring() + " in " + ts.visit(e, null));
+				+ ltype.toString() + " in " + ts.visit(e, null));
 	}
 
 	public Type visit(FreeExp e, Env<Type> env) {
@@ -264,7 +281,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		if (type instanceof RefT) { return UnitT.getInstance(); }
 
 		return new ErrorT("The free expression expect a reference type " +
-				"found " + type.tostring() + " in " + ts.visit(e, null));
+				"found " + type.toString() + " in " + ts.visit(e, null));
 	}
 
 	public Type visit(UnitExp e, Env<Type> env) {
