@@ -122,7 +122,21 @@ public class Checker implements Visitor<Type,Env<Type>> {
 	}
 
 	public Type visit(CallExp e, Env<Type> env) {
-		// answer question 6
+		Exp operator = e.operator();
+		List<Exp> operands = e.operands();
+
+		Type type = (Type) operator.accept(this, env);
+
+		if (type instanceof ErrorT) return type;
+		if (!(type instanceof FuncT)) return new ErrorT("Expected a function type in the call expression, found "
+				+ type + " in " + ts.visit(e, null));
+
+		int i = 0;
+		for(Exp iexp : operands){
+			Type t = (Type) iexp.accept(this, env);
+			if (t instanceof ErrorT) return t;
+			//TODO: Check if iexp matches ith exp of function type, but howww........
+		}
 		return new ErrorT("Not coded yet.");
 	}
 
@@ -160,6 +174,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		return new ErrorT("Not coded yet.");
 	}
 
+	//Question 2a
 	public Type visit(CarExp e, Env<Type> env) {
 		Exp exp = e.arg();
 		Type type = (Type)exp.accept(this, env);
@@ -199,6 +214,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		return new PairT(t1, t2);
 	}
 
+	//Question 2b
 	public Type visit(ListExp e, Env<Type> env) {
 		Type type = e.type();
 		List<Exp> elements = e.elems();
@@ -335,6 +351,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		return visitCompoundArithExp(e, env, ts.visit(e, null));
 	}
 
+	//Question 3
 	private Type visitCompoundArithExp(CompoundArithExp e, Env<Type> env, String printNode) {
 		// answer question 3
 		return new ErrorT("Not coded yet.");
