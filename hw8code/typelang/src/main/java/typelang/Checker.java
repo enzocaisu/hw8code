@@ -207,6 +207,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 				+ type.tostring() + " in " + ts.visit(e, null));
 	}
 
+
 	public Type visit(RefExp e, Env<Type> env) {
 		Exp value = e.value_exp();
 		Type type = e.type();
@@ -221,6 +222,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 				" found " + expType.tostring() + " in " + ts.visit(e, null));
 	}
 
+	//Question 1a
 	public Type visit(DerefExp e, Env<Type> env) {
 		Exp exp = e.loc_exp();
 		Type type = (Type)exp.accept(this, env);
@@ -233,9 +235,24 @@ public class Checker implements Visitor<Type,Env<Type>> {
 				 type.tostring() + " in " + ts.visit(e, null));
 	}
 
+	//Question 1b
 	public Type visit(AssignExp e, Env<Type> env) {
-		// answer question 1(b)
-		return new ErrorT("Not coded yet.");
+		Exp lhs = e.lhs_exp();
+		Exp rhs = e.rhs_exp();
+		Type ltype = (Type) lhs.accept(this, env);
+		Type rtype = (Type) rhs.accept(this, env);
+
+		if (ltype instanceof ErrorT) return ltype;
+
+		if(ltype instanceof RefT) {
+			if (rtype instanceof ErrorT) return rtype;
+			if (rtype.typeEqual(ltype)) return rtype;
+			return new ErrorT("The inner type of the reference type is "
+			+ ((RefT) ltype).nestType().tostring() + ", the rhs type is " + rtype.tostring() + " in " + ts.visit(e, null) );
+		}
+
+		return new ErrorT("The lhs of the assignment expression expects a reference type, found "
+				+ ltype.tostring() + " in " + ts.visit(e, null));
 	}
 
 	public Type visit(FreeExp e, Env<Type> env) {
