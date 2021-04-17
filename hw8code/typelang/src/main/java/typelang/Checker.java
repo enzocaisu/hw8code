@@ -7,7 +7,6 @@ import typelang.AST.*;
 import typelang.Env.ExtendEnv;
 import typelang.Env.GlobalEnv;
 import typelang.Type.*;
-import typelang.parser.TypeLangParser;
 
 public class Checker implements Visitor<Type,Env<Type>> {
 	Printer.Formatter ts = new Printer.Formatter();
@@ -122,22 +121,24 @@ public class Checker implements Visitor<Type,Env<Type>> {
 	}
 
 	public Type visit(CallExp e, Env<Type> env) {
-		Exp operator = e.operator();
 		List<Exp> operands = e.operands();
 
-		Type type = (Type) operator.accept(this, env);
+		Type opType = (Type) e.operator().accept(this, env);
 
-		if (type instanceof ErrorT) return type;
-		if (!(type instanceof FuncT)) return new ErrorT("Expected a function type in the call expression, found "
-				+ type + " in " + ts.visit(e, null));
+		if (opType instanceof ErrorT) return opType;
+		if (!(opType instanceof FuncT)) return new ErrorT("Expected a function type in the call expression, found "
+				+ opType + " in " + ts.visit(e, null));
+		
+		List<Type> opTypes = ((FuncT) opType).argTypes();
 
-		int i = 0;
-		for(Exp iexp : operands){
-			Type t = (Type) iexp.accept(this, env);
-			if (t instanceof ErrorT) return t;
-			//TODO: Check if iexp matches ith exp of function type, but howww........
+		for(int i = 0; i < operands.size(); i++){
+			Type type = (Type) operands.get(i).accept(this, env);
+			Type operandType = opTypes.get(i);
+			if(!(type.typeEqual(operandType))) return new ErrorT("The expected type of the " + i + "th actual" +
+					"parameter is " + operandType + ", found " + type +" in "+ ts.visit(e, null));
 		}
-		return new ErrorT("Not coded yet.");
+
+		return ((FuncT) opType).returnType();
 	}
 
 	public Type visit(LetrecExp e, Env<Type> env) {
@@ -171,7 +172,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 
 	public Type visit(IfExp e, Env<Type> env) {
 		// answer question 5
-		return new ErrorT("Not coded yet.");
+		return new ErrorT("Not coded yet in IfExp.");
 	}
 
 	//Question 2a
@@ -328,10 +329,11 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		return visitBinaryComparator(e, env, ts.visit(e, null));
 	}
 
+
 	private Type visitBinaryComparator(BinaryComparator e, Env<Type> env,
 			String printNode) {
 		// answer question 4
-		return new ErrorT("Not coded yet.");
+		return new ErrorT("Not coded yet in BinaryComparator.");
 	}
 
 
@@ -354,7 +356,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 	//Question 3
 	private Type visitCompoundArithExp(CompoundArithExp e, Env<Type> env, String printNode) {
 		// answer question 3
-		return new ErrorT("Not coded yet.");
+		return new ErrorT("Not coded yet in visitCompoundArithExp.");
 	}
 
 	private static boolean assignable(Type t1, Type t2) {
