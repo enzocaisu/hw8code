@@ -134,7 +134,7 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		for(int i = 0; i < operands.size(); i++){
 			Type type = (Type) operands.get(i).accept(this, env);
 			Type operandType = opTypes.get(i);
-			if(!(type.typeEqual(operandType))) return new ErrorT("The expected type of the " + i + "th actual" +
+			if(!(type.typeEqual(operandType))) return new ErrorT("The expected type of the " + i + "th actual " +
 					"parameter is " + operandType + ", found " + type +" in "+ ts.visit(e, null));
 		}
 
@@ -170,9 +170,28 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		return (Type) e.body().accept(this, new_env);
 	}
 
+
 	public Type visit(IfExp e, Env<Type> env) {
-		// answer question 5
-		return new ErrorT("Not coded yet in IfExp.");
+		Exp cond = e.conditional();
+		Type type = (Type) cond.accept(this, env);
+
+		Exp thenExp = e.then_exp();
+		Type thenType = (Type) thenExp.accept(this, env);
+
+
+		Exp elseExp = e.else_exp();
+		Type elseType = (Type) elseExp.accept(this, env);
+
+		if (type instanceof ErrorT) return type;
+		if (!(type instanceof BoolT)) return new ErrorT("If expression expects a bool conditional, got " +
+				type + " in " + ts.visit(e, null));
+
+		if (thenType instanceof ErrorT) return type;
+		if (elseType instanceof ErrorT) return type;
+		//Hmmmmmmmmmm.....I'll accept but I hate the idea that they have to be the same for some reason....
+		if (!(thenType.typeEqual(elseType))) return new ErrorT("Then and Else expressions do not match, got " + thenType + " and " + elseType + " in " + ts.visit(e, null));
+
+		return elseType;
 	}
 
 	//Question 2a
@@ -355,8 +374,15 @@ public class Checker implements Visitor<Type,Env<Type>> {
 
 	//Question 3
 	private Type visitCompoundArithExp(CompoundArithExp e, Env<Type> env, String printNode) {
-		// answer question 3
-		return new ErrorT("Not coded yet in visitCompoundArithExp.");
+		List<Exp> all = e.all();
+		Type fstType = (Type) e.fst().accept(this, env);
+		for(int i = 0; i < all.size(); i++){
+			Exp exp = all.get(i);
+			Type type = (Type) exp.accept(this, env);
+			if(type instanceof ErrorT) return type;
+			if(!(type instanceof NumT)) return new ErrorT("The expected type of argument " + i + "is number, found " + type + " in " + printNode);
+		}
+		return fstType;
 	}
 
 	private static boolean assignable(Type t1, Type t2) {

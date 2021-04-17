@@ -3,3 +3,4 @@
 (define add : (num num num −> num) (lambda ( x : num y : num z : num) (+ x (+ y z))))
 
 (define add : (num num num -> num) (lambda (x: num y: num z: num) (+x (+y z))))
+(add 5 56 #t)
