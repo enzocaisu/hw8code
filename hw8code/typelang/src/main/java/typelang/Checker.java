@@ -188,7 +188,6 @@ public class Checker implements Visitor<Type,Env<Type>> {
 
 		if (thenType instanceof ErrorT) return type;
 		if (elseType instanceof ErrorT) return type;
-		//Hmmmmmmmmmm.....I'll accept but I hate the idea that they have to be the same for some reason....
 		if (!(thenType.typeEqual(elseType))) return new ErrorT("Then and Else expressions do not match, got " + thenType + " and " + elseType + " in " + ts.visit(e, null));
 
 		return elseType;
@@ -297,11 +296,12 @@ public class Checker implements Visitor<Type,Env<Type>> {
 
 		if (ltype instanceof ErrorT) return ltype;
 
-		if(ltype instanceof RefT) {
+		if (ltype instanceof RefT) {
+			Type nestLtype = ((RefT) ltype).nestType();
 			if (rtype instanceof ErrorT) return rtype;
-			if (rtype.typeEqual(ltype)) return rtype;
+			if (rtype.typeEqual(nestLtype)) return rtype;
 			return new ErrorT("The inner type of the reference type is "
-			+ ((RefT) ltype).nestType().toString() + ", the rhs type is " + rtype.toString() + " in " + ts.visit(e, null) );
+			+ nestLtype + ", the rhs type is " + rtype.toString() + " in " + ts.visit(e, null) );
 		}
 
 		return new ErrorT("The lhs of the assignment expression expects a reference type, found "
@@ -348,11 +348,19 @@ public class Checker implements Visitor<Type,Env<Type>> {
 		return visitBinaryComparator(e, env, ts.visit(e, null));
 	}
 
-
 	private Type visitBinaryComparator(BinaryComparator e, Env<Type> env,
 			String printNode) {
-		// answer question 4
-		return new ErrorT("Not coded yet in BinaryComparator.");
+		Exp e1 = e.first_exp();
+		Type t1 = (Type) e1.accept(this, env);
+
+		Exp e2 = e.second_exp();
+		Type t2 = (Type) e2.accept(this, env);
+
+		if (t1 instanceof ErrorT) return t1;
+		if (t2 instanceof ErrorT) return t2;
+		if (!(t1 instanceof NumT)) return new ErrorT("Expression 1 was " + t1 + ", expected number in " + printNode);
+		if (!(t2 instanceof NumT)) return new ErrorT("Expression 2 was " + t2 + ", expected number in " + printNode);
+		return new BoolT();
 	}
 
 
@@ -375,14 +383,13 @@ public class Checker implements Visitor<Type,Env<Type>> {
 	//Question 3
 	private Type visitCompoundArithExp(CompoundArithExp e, Env<Type> env, String printNode) {
 		List<Exp> all = e.all();
-		Type fstType = (Type) e.fst().accept(this, env);
 		for(int i = 0; i < all.size(); i++){
 			Exp exp = all.get(i);
 			Type type = (Type) exp.accept(this, env);
 			if(type instanceof ErrorT) return type;
 			if(!(type instanceof NumT)) return new ErrorT("The expected type of argument " + i + "is number, found " + type + " in " + printNode);
 		}
-		return fstType;
+		return new NumT();
 	}
 
 	private static boolean assignable(Type t1, Type t2) {
